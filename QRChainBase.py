@@ -134,3 +134,75 @@ for i in range(18):
 ### 计算过程参数S_3^k
 S_3_1 = -np.dot(N_prime,R_r_great)
 
+# 雅可比矩阵求解
+J=np.zeros((6,6), dtype=np.float64)
+for i in range(6):
+    J[i][:]=np.hstack((-normal1_T[i],np.cross(normal1_T[i].T,loc1_T[i].T)))
+print(J)
+# 求解系数参数S_5^K，用雅可比矩阵的广义逆矩阵，当零件的位姿完全确定时，J是非异奇的，可以求逆
+S_5_1 = np.linalg.pinv(J)
+print(S_5_1)
+
+# 定义S_6^k计算过程参数和计算系数矩阵S_6^k
+H0_f3_to_f1 = np.array([
+    [-1, 0, 0, 0],
+    [0, 1, 0, -12.5],
+    [0, 0, -1, -120],
+    [0, 0, 0, 1]
+])
+
+H0_f3_to_R = H0_f3_to_f1
+
+# 提取旋转矩阵和平移向量
+R_f3_to_R = H0_f3_to_R[0:3, 0:3]
+t_f3_to_R = H0_f3_to_R[0:3, 3]
+
+# print(R_f3_to_R)
+# print(t_f3_to_R)
+
+# 定义旋转矩阵的转置
+R_f3_to_R_T = R_f3_to_R.T
+
+# 定义平移向量的叉积矩阵
+t_hat_f3_to_R = np.array([
+    [0, t_f3_to_R[2], -t_f3_to_R[1]],
+    [-t_f3_to_R[2], 0, t_f3_to_R[0]],
+    [t_f3_to_R[1], -t_f3_to_R[0], 0]
+])
+
+# 计算 S_6^1 矩阵
+S_6_1_upper = np.dot(-R_f3_to_R_T, t_hat_f3_to_R)
+S_6_1 = np.block([
+    [-R_f3_to_R_T, S_6_1_upper],
+    [np.zeros((3, 3)), -R_f3_to_R_T]
+])
+# print(S_6_1)
+
+# 构建S_8^k矩阵
+# 创建全零矩阵
+S_8_1 = np.zeros((48, 6))
+
+# 在12-18行上设置单位矩阵
+S_8_1[12:18, :] = np.eye(6)
+# print(S_8_1)
+
+# 创建列向量 U_f^1
+U_f_1 = np.array([ [0.1], [0], [-0.1], [0], [0], [0.05], [0], [-0.2], [0], [0], [0], [-0.1], [0.05], [0], [0.1], [0.1], [0], [0]])
+
+# 创建列向量 U_m^1 或 x_j
+x_j = np.array([[0], [0], [0.0150], [0], [0], [0]])
+U_m_1 = x_j
+
+# 执行计算 x_f3'
+x_f3_prime = S_6_1.dot(S_5_1).dot(S_3_1).dot(U_f_1) + U_m_1
+print(x_f3_prime)
+
+# 计算第一项 S_8^1 * S_6^1 * S_5^1 * S_3^1 * U_f^1
+first_term = S_8_1.dot(S_6_1).dot(S_5_1).dot(S_3_1).dot(U_f_1)
+
+# 计算第二项 S_8^1 * U_m^1
+second_term = S_8_1.dot(U_m_1)
+
+# 合并两项得到 X_1
+X_1 = first_term + second_term
+print(X_1)
