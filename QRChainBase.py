@@ -10,9 +10,9 @@ sigma_1 = np.array([[1],
                     [0],
                     [0]])
 sigma_2 = np.array([[0],
-                   [1],
-                   [0],
-                   [0]])
+                    [1],
+                    [0],
+                    [0]])
 sigma_3 = np.array([[0],
                     [0],
                     [1],
@@ -104,10 +104,10 @@ error3_T = np.array([[0.2, 0, 0.1],
 N_prime = np.zeros((6, 18), dtype=np.float64)
 for i in range(6):
     for j in range(18):
-        if 3*i <= j < 3*i+3:
-          N_prime[i][j] = normal1_T[i][j % 3]
+        if 3 * i <= j < 3 * i + 3:
+            N_prime[i][j] = normal1_T[i][j % 3]
         else:
-          N_prime[i][j] = 0
+            N_prime[i][j] = 0
 # print(N_prime)
 
 # 计算R_R矩阵
@@ -118,26 +118,26 @@ R_r = np.identity(3)
 R_r_great = np.zeros((18, 18), dtype=np.float64)
 for i in range(18):
     for j in range(18):
-        if i % 3 == 0 and i <= j < (i+3):
+        if i % 3 == 0 and i <= j < (i + 3):
             R_r_great[i][j] = R_r[0][j % 3]
             # j += 1
-        elif i % 3 == 1 and (i-1) <= j < (i+2):
+        elif i % 3 == 1 and (i - 1) <= j < (i + 2):
             R_r_great[i][j] = R_r[1][j % 3]
             # j += 1
-        elif i % 3 == 2 and (i-2) <= j < (i+1):
+        elif i % 3 == 2 and (i - 2) <= j < (i + 1):
             R_r_great[i][j] = R_r[2][j % 3]
             # j += 1
         else:
             R_r_great[i][j] = 0
             # j += 1
     # i += 1
-### 计算过程参数S_3^k
-S_3_1 = -np.dot(N_prime,R_r_great)
+# 计算过程参数S_3^k
+S_3_1 = -np.dot(N_prime, R_r_great)
 
 # 雅可比矩阵求解
-J=np.zeros((6,6), dtype=np.float64)
+J = np.zeros((6, 6), dtype=np.float64)
 for i in range(6):
-    J[i][:]=np.hstack((-normal1_T[i],np.cross(normal1_T[i].T,loc1_T[i].T)))
+    J[i][:] = np.hstack((-normal1_T[i], np.cross(normal1_T[i].T, loc1_T[i].T)))
 print(J)
 # 求解系数参数S_5^K，用雅可比矩阵的广义逆矩阵，当零件的位姿完全确定时，J是非异奇的，可以求逆
 S_5_1 = np.linalg.pinv(J)
@@ -176,7 +176,7 @@ S_6_1 = np.block([
     [-R_f3_to_R_T, S_6_1_upper],
     [np.zeros((3, 3)), -R_f3_to_R_T]
 ])
-# print(S_6_1)
+print(S_6_1)
 
 # 构建S_8^k矩阵
 # 创建全零矩阵
@@ -187,7 +187,8 @@ S_8_1[12:18, :] = np.eye(6)
 # print(S_8_1)
 
 # 创建列向量 U_f^1
-U_f_1 = np.array([ [0.1], [0], [-0.1], [0], [0], [0.05], [0], [-0.2], [0], [0], [0], [-0.1], [0.05], [0], [0.1], [0.1], [0], [0]])
+U_f_1 = np.array(
+    [[0.1], [0], [-0.1], [0], [0], [0.05], [0], [-0.2], [0], [0], [0], [-0.1], [0.05], [0], [0.1], [0.1], [0], [0]])
 
 # 创建列向量 U_m^1 或 x_j
 x_j = np.array([[0], [0], [0.0150], [0], [0], [0]])
@@ -195,7 +196,7 @@ U_m_1 = x_j
 
 # 执行计算 x_f3'
 x_f3_prime = S_6_1.dot(S_5_1).dot(S_3_1).dot(U_f_1) + U_m_1
-print(x_f3_prime)
+# print(x_f3_prime)
 
 # 计算第一项 S_8^1 * S_6^1 * S_5^1 * S_3^1 * U_f^1
 first_term = S_8_1.dot(S_6_1).dot(S_5_1).dot(S_3_1).dot(U_f_1)
@@ -205,4 +206,83 @@ second_term = S_8_1.dot(U_m_1)
 
 # 合并两项得到 X_1
 X_1 = first_term + second_term
-print(X_1)
+# print(X_1)
+
+# =================================================工序2======================================================
+# 各个特征相对于RCS的齐次变换矩阵
+H0_f1_R = np.array([
+    [-1, 0, 0, 0],
+    [0, 1, 0, 12.5],
+    [0, 0, -1, -120],
+    [0, 0, 0, 1]
+])
+
+H0_f2_R = np.array([
+    [-1, 0, 0, 0],
+    [0, 1, 0, 12.5],
+    [0, 0, -1, -110],
+    [0, 0, 0, 1]
+])
+
+H0_f4_R = np.array([
+    [1, 0, 0, 0],
+    [0, 1, 0, 125],
+    [0, 0, 1, -20],
+    [0, 0, 0, 1]
+])
+
+H0_f5_R = np.array([
+    [0.9701, 0, -0.2425, 0],
+    [-0.2425, 0, -0.9701, -112.5],
+    [0, 1, 0, -60],
+    [0, 0, 0, 1]
+])
+
+H0_f6_R = np.array([
+    [0.3162, 0, -0.9487, -80],
+    [0, 1, 0, 0],
+    [0.9487, 0, 0.3162, -60],
+    [0, 0, 0, 1]
+])
+
+H0_f7_R = np.array([
+    [0.9701, 0, -0.2425, 0],
+    [0.2425, 0, 0.9701, 137.5],
+    [0, -1, 0, -60],
+    [0, 0, 0, 1]
+])
+
+H0_f8_R = np.array([
+    [0.3162, 0, 0.9487, 80],
+    [0, 1, 0, 0],
+    [-0.9487, 0, 0.3162, -60],
+    [0, 0, 0, 1]
+])
+
+
+# 定义从状态转移矩阵H21到误差变换矩阵Q21之间的函数
+def compute_Q_from_homogeneous(H):
+    """
+    Compute the Q matrix from a given homogeneous transformation matrix H.
+    
+    Args:
+    H (numpy.ndarray): A 4x4 homogeneous transformation matrix.
+    
+    Returns:
+    numpy.ndarray: The computed Q matrix.
+    """
+    # Extract the rotation matrix R and translation vector t from H
+    R = H[:3, :3]
+    t = H[:3, 3]
+
+    # Create the skew-symmetric matrix of the translation vector
+    skew_t = np.array([[0, -t[2], t[1]],
+                       [t[2], 0, -t[0]],
+                       [-t[1], t[0], 0]])
+
+    # Compute Q using the negative transpose of R and the product of the transposed R and skew_t
+    Q_upper = np.hstack((R.T, -R.T @ skew_t))
+    Q_lower = np.hstack((np.zeros((3, 3)), R.T))
+    Q = np.vstack((Q_upper, Q_lower))
+
+    return Q
