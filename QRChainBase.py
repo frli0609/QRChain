@@ -261,7 +261,7 @@ H0_f8_R = np.array([
 
 
 # 定义从状态转移矩阵H21到误差变换矩阵Q21之间的函数
-def compute_Q_from_homogeneous(H):
+def compute_Q_from_H(H):
     """
     Compute the Q matrix from a given homogeneous transformation matrix H.
     
@@ -271,18 +271,19 @@ def compute_Q_from_homogeneous(H):
     Returns:
     numpy.ndarray: The computed Q matrix.
     """
-    # Extract the rotation matrix R and translation vector t from H
+    # 从状态转移方程提取旋转矩阵和平移量
     R = H[:3, :3]
     t = H[:3, 3]
 
-    # Create the skew-symmetric matrix of the translation vector
+    # 反斜对称阵
     skew_t = np.array([[0, -t[2], t[1]],
                        [t[2], 0, -t[0]],
                        [-t[1], t[0], 0]])
 
-    # Compute Q using the negative transpose of R and the product of the transposed R and skew_t
+    # Q矩阵计算
     Q_upper = np.hstack((R.T, -R.T @ skew_t))
     Q_lower = np.hstack((np.zeros((3, 3)), R.T))
     Q = np.vstack((Q_upper, Q_lower))
 
     return Q
+
