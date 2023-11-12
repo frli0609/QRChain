@@ -4,6 +4,7 @@ import sympy
 import matplotlib.pyplot as plt
 import pandas as pd
 
+M = 8
 # S_4^k计算需要的矩阵基础算子
 sigma_1 = np.array([[1],
                     [0],
