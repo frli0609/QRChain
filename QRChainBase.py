@@ -210,6 +210,7 @@ X_1 = first_term + second_term
 
 # =================================================工序2======================================================
 # 各个特征相对于RCS的齐次变换矩阵
+H0_f_R = []
 H0_f1_R = np.array([
     [-1, 0, 0, 0],
     [0, 1, 0, 12.5],
@@ -223,6 +224,8 @@ H0_f2_R = np.array([
     [0, 0, -1, -110],
     [0, 0, 0, 1]
 ])
+
+H0_f3_R = np.zeros((4,4), dtype=np.float64)
 
 H0_f4_R = np.array([
     [1, 0, 0, 0],
@@ -259,6 +262,14 @@ H0_f8_R = np.array([
     [0, 0, 0, 1]
 ])
 
+H0_f_R.append(H0_f1_R)
+H0_f_R.append(H0_f2_R)
+H0_f_R.append(H0_f3_R)
+H0_f_R.append(H0_f4_R)
+H0_f_R.append(H0_f5_R)
+H0_f_R.append(H0_f6_R)
+H0_f_R.append(H0_f7_R)
+H0_f_R.append(H0_f8_R)
 
 # 定义从状态转移矩阵H21到误差变换矩阵Q21之间的函数
 def compute_Q_from_H(H):
@@ -287,13 +298,43 @@ def compute_Q_from_H(H):
 
     return Q
 
+#需要知道已经加工完成的特征、上一道工序的基准、这一道工序的基准（这一个工序的RCS与哪个特征重合）、下一道工序及以后才会加工的特征分别是哪些*********************************************
+Q = []
+for i in range(M):
+    if i+1 == 3 or i+1 == 4:     ########这里的3和4以后要用R和F代替（当前基准特征和尚未加工的特征）
+        Q.append(np.zeros((6,6), dtype=np.float64))
+    else: 
+        Q.append(compute_Q_from_H(H0_f_R[i]))
+print(Q)
 
-Q_f1_R = compute_Q_from_H(H0_f1_R)
-Q_f2_R = compute_Q_from_H(H0_f2_R)
-Q_f5_R = compute_Q_from_H(H0_f5_R)
-Q_f6_R = compute_Q_from_H(H0_f6_R)
-Q_f7_R = compute_Q_from_H(H0_f7_R)
-Q_f8_R = compute_Q_from_H(H0_f8_R)
 
-print(Q_f5_R)
-print(Q_f8_R)
+def create_error_transformation_matrix(M, R, Q_matrices):
+    """
+    Create the error transformation matrix S_1^k.
+
+    Parameters:
+    M (int): The total number of features.
+    R (int): The center of transformation (1-based index).
+    Q_matrices (list of np.array): List of M 6x6 Q matrices.
+
+    Returns:
+    np.array: The error transformation matrix S_1^k.
+    """
+    # Initialize a 6M x 6M zero matrix
+    S = np.zeros((6*M, 6*M))
+
+    # Fill the diagonal blocks with 6x6 identity matrices
+    for i in range(M):
+        S[6*i:6*(i+1), 6*i:6*(i+1)] = np.eye(6)
+
+    # Fill the non-diagonal blocks in the R-th row with Q matrices
+    for i in range(M):
+        if i != R - 1:
+            S[6*i:6*(i+1),6*(R-1):6*R] = -Q_matrices[i]
+
+    return S
+
+# Example usage
+R = 3
+# Compute the error transformation matrix
+S_1_k = create_error_transformation_matrix(M, R, Q )
