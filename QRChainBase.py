@@ -144,37 +144,37 @@ S_5_1 = np.linalg.pinv(J)
 print(S_5_1)
 
 # 定义S_6^k计算过程参数和计算系数矩阵S_6^k
-H0_f3_to_f1 = np.array([
+H0_f3_f1 = np.array([
     [-1, 0, 0, 0],
     [0, 1, 0, -12.5],
     [0, 0, -1, -120],
     [0, 0, 0, 1]
 ])
 
-H0_f3_to_R = H0_f3_to_f1
+H0_f3_R = H0_f3_f1
 
 # 提取旋转矩阵和平移向量
-R_f3_to_R = H0_f3_to_R[0:3, 0:3]
-t_f3_to_R = H0_f3_to_R[0:3, 3]
+R_f3_R = H0_f3_R[0:3, 0:3]
+t_f3_R = H0_f3_R[0:3, 3]
 
 # print(R_f3_to_R)
 # print(t_f3_to_R)
 
 # 定义旋转矩阵的转置
-R_f3_to_R_T = R_f3_to_R.T
+R_f3_R_T = R_f3_R.T
 
 # 定义平移向量的叉积矩阵
-t_hat_f3_to_R = np.array([
-    [0, t_f3_to_R[2], -t_f3_to_R[1]],
-    [-t_f3_to_R[2], 0, t_f3_to_R[0]],
-    [t_f3_to_R[1], -t_f3_to_R[0], 0]
+t_hat_f3_R = np.array([
+    [0, t_f3_R[2], -t_f3_R[1]],
+    [-t_f3_R[2], 0, t_f3_R[0]],
+    [t_f3_R[1], -t_f3_R[0], 0]
 ])
 
 # 计算 S_6^1 矩阵
-S_6_1_upper = np.dot(-R_f3_to_R_T, t_hat_f3_to_R)
+S_6_1_upper = np.dot(-R_f3_R_T, t_hat_f3_R)
 S_6_1 = np.block([
-    [-R_f3_to_R_T, S_6_1_upper],
-    [np.zeros((3, 3)), -R_f3_to_R_T]
+    [-R_f3_R_T, S_6_1_upper],
+    [np.zeros((3, 3)), -R_f3_R_T]
 ])
 print(S_6_1)
 
@@ -287,3 +287,13 @@ def compute_Q_from_H(H):
 
     return Q
 
+
+Q_f1_R = compute_Q_from_H(H0_f1_R)
+Q_f2_R = compute_Q_from_H(H0_f2_R)
+Q_f5_R = compute_Q_from_H(H0_f5_R)
+Q_f6_R = compute_Q_from_H(H0_f6_R)
+Q_f7_R = compute_Q_from_H(H0_f7_R)
+Q_f8_R = compute_Q_from_H(H0_f8_R)
+
+print(Q_f5_R)
+print(Q_f8_R)
